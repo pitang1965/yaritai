@@ -8,7 +8,7 @@ export const Route = createFileRoute('/privacy')({
 });
 
 const UPDATED = '2026年11月15日';
-const CONTACT = 'info@nafuda.me';
+const CONTACT = 'yaritai@googlegroups.com';
 
 function Section(props: { title: string; children: ReactNode }) {
   return (
