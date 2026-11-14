@@ -175,6 +175,9 @@ export function SettingsSheet(props: {
         />
       </div>
       <p className="lead">生まれた年を入れると、残りの年数と「何年に1件ずつ」の目安が出ます。</p>
+      <p className="lead">
+        <a href="/privacy">プライバシーポリシー</a>
+      </p>
       <div className="actions">
         <button
           className="danger"

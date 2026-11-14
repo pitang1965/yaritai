@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { IDEAS } from '../domain/ideas';
 import { authClient } from '../lib/auth-client';
@@ -36,6 +37,9 @@ export function Landing() {
         </button>
         {failed && <p role="alert">ログインを始められませんでした。時間をおいてもう一度お試しください。</p>}
       </div>
+      <p className="foot">
+        <Link to="/privacy">プライバシーポリシー</Link>
+      </p>
     </div>
   );
 }

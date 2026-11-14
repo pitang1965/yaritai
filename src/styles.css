@@ -114,3 +114,15 @@ nav.tabs button[aria-selected="true"] { color: var(--accent); font-weight: 700 }
 .landing ul { text-align: left; display: inline-flex; flex-direction: column; gap: 6px; margin: 0 0 28px; padding: 0; list-style: none }
 .landing li::before { content: "・"; color: var(--accent) }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+
+/* プライバシーポリシーなどの読み物ページ */
+.doc { max-width: 680px; margin: 0 auto; padding: 32px 20px 64px; line-height: 1.9 }
+.doc h1 { font-size: 22px; margin: 20px 0 4px }
+.doc h2 { font-size: 16px; margin: 28px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--line) }
+.doc p, .doc li { color: var(--muted); font-size: 14px }
+.doc strong { color: var(--ink) }
+.doc ul { padding-left: 1.2em }
+.doc a { color: var(--accent) }
+.doc .updated { font-size: 12px; margin: 0 }
+.landing .foot { margin-top: 32px; font-size: 12px }
+.landing .foot a { color: var(--muted) }
