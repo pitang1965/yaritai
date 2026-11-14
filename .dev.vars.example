@@ -1,0 +1,6 @@
+# .dev.vars にコピーして値を入れる（ローカル開発用。git には入れない）。
+BETTER_AUTH_URL=http://localhost:3000
+# openssl rand -base64 32 などで作る
+BETTER_AUTH_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=

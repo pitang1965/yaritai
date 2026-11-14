@@ -1,0 +1,20 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "yaritai",
+	"main": "@tanstack/react-start/server-entry",
+	"compatibility_date": "2026-07-01",
+	"compatibility_flags": ["nodejs_compat"],
+	"vars": {
+		"BETTER_AUTH_URL": "https://yaritai.over40web.club"
+	},
+	"observability": { "enabled": true },
+	"routes": [{ "pattern": "yaritai.over40web.club", "custom_domain": true }],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "yaritai-db",
+			"database_id": "0c33d32c-27c5-4efa-a218-7424030b8292",
+			"migrations_dir": "drizzle"
+		}
+	]
+}
