@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
-import { and, count, eq } from 'drizzle-orm';
+import { and, count, eq, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import { createDb } from '../db';
 import { items, settings } from '../db/schema';
@@ -51,7 +51,7 @@ async function requireUser(): Promise<string> {
 
 export type MyData =
   | { signedIn: false }
-  | { signedIn: true; name: string; items: Item[]; settings: Settings };
+  | { signedIn: true; items: Item[]; settings: Settings };
 
 export const fetchMyData = createServerFn({ method: 'GET' }).handler(async (): Promise<MyData> => {
   const session = await createAuth().api.getSession({ headers: getRequest().headers });
@@ -64,7 +64,6 @@ export const fetchMyData = createServerFn({ method: 'GET' }).handler(async (): P
   ]);
   return {
     signedIn: true,
-    name: session.user.name,
     items: rows.map(({ userId: _, ...it }) => it as Item),
     settings: s ? { target: s.target, birth: s.birth, until: s.until } : DEFAULT_SETTINGS,
   };
@@ -76,7 +75,8 @@ export const saveItem = createServerFn({ method: 'POST' })
   .handler(async ({ data }) => {
     const uid = await requireUser();
     const db = createDb();
-    const [{ n }] = await db.select({ n: count() }).from(items).where(eq(items.userId, uid));
+    const [{ n }] = await db.select({ n: count() }).from(items)
+      .where(and(eq(items.userId, uid), ne(items.id, data.id))); // 更新は数えない
     if (n >= MAX_ITEMS) throw new Error(`項目は${MAX_ITEMS}件までです`);
     const { id, ...rest } = data;
     await db

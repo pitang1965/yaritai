@@ -25,7 +25,7 @@ const CAT = Object.fromEntries(CATEGORIES.map((c) => [c.key, c])) as Record<
 >;
 
 
-export function App(props: { name: string; items: Item[]; settings: Settings }) {
+export function App(props: { items: Item[]; settings: Settings }) {
   const router = useRouter();
   const [items, setItems] = useState(props.items);
   const [settings, setSettings] = useState(props.settings);
@@ -52,17 +52,21 @@ export function App(props: { name: string; items: Item[]; settings: Settings }) 
     else setSettled(next);
   };
 
-  // サーバーへの保存。失敗したらサーバーの状態を読み直す（画面と食い違ったままにしない）。
-  const persist = async (p: Promise<unknown>) => {
+  // サーバーへの保存。届く順が入れ替わらないよう1件ずつ順に送る。
+  // 失敗したらサーバーの状態を読み直す（画面と食い違ったままにしない）。
+  const queue = useRef<Promise<void>>(Promise.resolve());
+  const persist = (send: () => Promise<unknown>) => {
     setSync('保存中…');
-    try {
-      await p;
-      setSync('保存済み（どの端末でも同じリスト）');
-    } catch {
-      setSync('保存できませんでした。読み直しています…');
-      showToast({ msg: '保存できませんでした' });
-      await router.invalidate();
-    }
+    queue.current = queue.current.then(async () => {
+      try {
+        await send();
+        setSync('保存済み（どの端末でも同じリスト）');
+      } catch {
+        setSync('保存できませんでした。読み直しています…');
+        showToast({ msg: '保存できませんでした' });
+        await router.invalidate();
+      }
+    });
   };
 
   // 画面の読み直し（router.invalidate）で届いた最新データに合わせる。
@@ -97,7 +101,7 @@ export function App(props: { name: string; items: Item[]; settings: Settings }) 
       createdAt: Date.now(),
     };
     commit([it, ...items]);
-    persist(saveItem({ data: it }));
+    persist(() => saveItem({ data: it }));
     showToast({ msg: 'マイリストに追加しました' });
     return it;
   };
@@ -107,7 +111,7 @@ export function App(props: { name: string; items: Item[]; settings: Settings }) 
       items.map((x) => (x.id === it.id ? it : x)),
       delay,
     );
-    persist(saveItem({ data: it }));
+    persist(() => saveItem({ data: it }));
   };
 
   const removeItem = (id: string) => {
@@ -115,7 +119,7 @@ export function App(props: { name: string; items: Item[]; settings: Settings }) 
     if (i < 0) return;
     const it = items[i];
     commit(items.filter((x) => x.id !== id));
-    persist(deleteItem({ data: { id } }));
+    persist(() => deleteItem({ data: { id } }));
     const short = it.title.length > 14 ? `${it.title.slice(0, 14)}…` : it.title;
     showToast({
       msg: `「${short}」を削除しました`,
@@ -128,7 +132,7 @@ export function App(props: { name: string; items: Item[]; settings: Settings }) 
             setSettled(next);
             return next;
           });
-          persist(saveItem({ data: it }));
+          persist(() => saveItem({ data: it }));
         },
       },
     });
@@ -257,7 +261,7 @@ export function App(props: { name: string; items: Item[]; settings: Settings }) 
           onClose={() => setSettingsOpen(false)}
           onSave={(s) => {
             setSettings(s);
-            persist(saveSettings({ data: s }));
+            persist(() => saveSettings({ data: s }));
             setSettingsOpen(false);
             showToast({ msg: '設定を保存しました' });
           }}

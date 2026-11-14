@@ -6,5 +6,3 @@ import * as schema from './schema';
 export function createDb() {
   return drizzle(env.DB, { schema });
 }
-
-export type Db = ReturnType<typeof createDb>;
