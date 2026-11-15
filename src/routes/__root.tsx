@@ -24,7 +24,8 @@ export const Route = createRootRoute({
       { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap',
+        // 本文は端末の日本語フォントを使う（Webフォントだとスクロールで新しい漢字が出るたびに読み込みが走る）。見出しだけ Zen Kaku。
+        href: 'https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@700&display=swap',
       },
     ],
   }),

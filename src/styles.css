@@ -14,7 +14,7 @@
   --done: #7b8a86;
   --on-accent: #ffffff;
   --font-display: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", sans-serif;
-  --font-body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --font-body: "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -57,9 +57,12 @@ h2 { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin
 .btn.ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); font-weight: 500 }
 .btn.google { display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; font-size: 16px }
 
-.list { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden }
+/* 長いリストを overflow: hidden で角丸に切り抜くと Android のスクロールが重くなるので、端の行だけ角を丸める */
+.list { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 14px }
 .row { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-top: 1px solid var(--line); min-height: 52px; transition: background .3s }
-.row:first-child { border-top: none }
+.row:first-child { border-top: none; border-radius: 13px 13px 0 0 }
+.row:last-child { border-radius: 0 0 13px 13px }
+.row:only-child { border-radius: 13px }
 .row.flash { background: var(--gold-soft) }
 .row .main { flex: 1; min-width: 0 }
 .row .t { display: block; overflow-wrap: anywhere }
