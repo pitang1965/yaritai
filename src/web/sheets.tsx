@@ -1,12 +1,16 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { CATEGORIES } from '../domain/ideas';
-import { COST, type Item, PRI, type Settings, TARGETS, WHEN } from '../domain/item';
+import { COST, isPublic, type Item, PRI, type Publish, SCOPES, type Settings, TARGETS, WHEN } from '../domain/item';
 import { authClient } from '../lib/auth-client';
 import { ideaById } from '../domain/ideas';
 
 function Sheet(props: { title: string; onClose: () => void; children: ReactNode }) {
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && props.onClose();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      (document.activeElement as HTMLElement | null)?.blur(); // 閉じる前に onBlur の保存（表示名）を走らせる
+      props.onClose();
+    };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [props.onClose]);
@@ -43,8 +47,18 @@ function Seg<K extends string | number>(props: {
   );
 }
 
+const ON_OFF = [
+  { key: 'off', name: '公開しない' },
+  { key: 'on', name: '公開する' },
+] as const;
+const SHOW_HIDE = [
+  { key: 'show', name: '出す' },
+  { key: 'hide', name: '出さない（非公開）' },
+] as const;
+
 export function EditSheet(props: {
   item: Item;
+  publish: Publish;
   onClose: () => void;
   onSave: (it: Item) => void;
   onDelete: () => void;
@@ -91,6 +105,23 @@ export function EditSheet(props: {
           onChange={(e) => setD({ ...d, memo: e.target.value })}
         />
       </div>
+      {props.publish.on && (
+        <div className="field">
+          <span className="lbl">公開リンクに</span>
+          <Seg
+            options={SHOW_HIDE}
+            value={d.hidden ? 'hide' : 'show'}
+            onChange={(k) => k && setD({ ...d, hidden: k === 'hide' })}
+          />
+          <span className="lbl">
+            {d.hidden
+              ? '非公開です。公開リンクには出ません。'
+              : isPublic(d, props.publish.scope)
+                ? 'この項目は公開リンクに出ます。'
+                : '公開範囲（厳選）の外なので、公開リンクには出ません。'}
+          </span>
+        </div>
+      )}
       <div className="actions">
         <button className="danger" type="button" onClick={props.onDelete}>
           削除
@@ -116,6 +147,9 @@ export function EditSheet(props: {
 export function SettingsSheet(props: {
   settings: Settings;
   pickCount: number;
+  publish: Publish;
+  onPublish: (p: Omit<Publish, 'token'>) => void;
+  onRenew: () => void;
   onClose: () => void;
   onSave: (s: Settings) => void;
   showToast: (t: { msg: string }) => void;
@@ -175,6 +209,7 @@ export function SettingsSheet(props: {
         />
       </div>
       <p className="lead">生まれた年を入れると、残りの年数と「何年に1件ずつ」の目安が出ます。</p>
+      <PublishField publish={props.publish} onPublish={props.onPublish} onRenew={props.onRenew} showToast={props.showToast} />
       <p className="lead">
         <a href="/privacy">プライバシーポリシー</a>
       </p>
@@ -196,5 +231,79 @@ export function SettingsSheet(props: {
         </div>
       </div>
     </Sheet>
+  );
+}
+
+/** 設定シートの「公開リンク」欄。変更はその場で保存する（オンにしたらすぐ URL を見せたいため）。 */
+function PublishField(props: {
+  publish: Publish;
+  onPublish: (p: Omit<Publish, 'token'>) => void;
+  onRenew: () => void;
+  showToast: (t: { msg: string }) => void;
+}) {
+  const p = props.publish;
+  const [name, setName] = useState(p.name);
+  const url = p.token ? `${window.location.origin}/p/${p.token}` : '';
+  const save = (o: Partial<Omit<Publish, 'token'>>) =>
+    props.onPublish({ on: p.on, scope: p.scope, name: name.trim(), ...o });
+  return (
+    <div className="field">
+      <span className="lbl">公開リンク（URL を知っている人だけが見られます）</span>
+      <Seg options={ON_OFF} value={p.on ? 'on' : 'off'} onChange={(k) => k && save({ on: k === 'on' })} />
+      {p.on && (
+        <>
+          <span className="lbl">見せる範囲（非公開の項目とメモは出しません）</span>
+          <Seg options={SCOPES} value={p.scope} onChange={(k) => k && save({ scope: k })} />
+          <label htmlFor="pubName">表示名（空欄なら名前を出しません）</label>
+          <input
+            id="pubName"
+            type="text"
+            maxLength={30}
+            placeholder="例 ピータン"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={() => name.trim() !== p.name && save({})}
+          />
+          {url && (
+            <>
+              <input type="text" readOnly aria-label="公開リンクの URL" value={url} onFocus={(e) => e.target.select()} />
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  className="btn ghost"
+                  type="button"
+                  onClick={() =>
+                    navigator.clipboard.writeText(url).then(
+                      () => props.showToast({ msg: 'URL をコピーしました' }),
+                      () => props.showToast({ msg: 'コピーできませんでした' }),
+                    )
+                  }
+                >
+                  コピー
+                </button>
+                {'share' in navigator && (
+                  <button
+                    className="btn ghost"
+                    type="button"
+                    onClick={() => navigator.share({ url }).catch(() => {})} // 共有を取り消したときも何もしない
+                  >
+                    共有
+                  </button>
+                )}
+                <a className="btn ghost" href={url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                  公開ページを見る
+                </a>
+                <button
+                  className="btn ghost"
+                  type="button"
+                  onClick={() => window.confirm('URL を作り直します。古い URL は見られなくなります。よろしいですか？') && props.onRenew()}
+                >
+                  URL を作り直す
+                </button>
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </div>
   );
 }

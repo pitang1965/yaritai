@@ -10,5 +10,5 @@ export const Route = createFileRoute('/')({
 
 function Home() {
   const data = Route.useLoaderData();
-  return data.signedIn ? <App items={data.items} settings={data.settings} /> : <Landing />;
+  return data.signedIn ? <App items={data.items} settings={data.settings} publish={data.publish} /> : <Landing />;
 }

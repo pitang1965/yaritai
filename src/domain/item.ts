@@ -38,6 +38,8 @@ export interface Item {
   pick: boolean;
   /** アイデア集から取り込んだ場合のアイデア ID。 */
   src: string | null;
+  /** 非公開（公開リンクでは見せない）。 */
+  hidden: boolean;
   createdAt: number;
 }
 
@@ -46,6 +48,39 @@ export interface Settings {
   target: number;
   birth: number | null;
   until: number;
+}
+
+export const SCOPES = [
+  { key: 'all', name: '全部' },
+  { key: 'pick', name: '厳選' },
+] as const;
+export type Scope = (typeof SCOPES)[number]['key'];
+
+/** 公開リンクの設定。token は止めても消さず、オンに戻すと同じURLになる。 */
+export interface Publish {
+  on: boolean;
+  scope: Scope;
+  /** 表示名。空なら名前を出さない。 */
+  name: string;
+  token: string | null;
+}
+
+export const DEFAULT_PUBLISH: Publish = { on: false, scope: 'all', name: '', token: null };
+
+/** 公開リンクに出る項目か（非公開は公開範囲より優先）。 */
+export const isPublic = (it: Pick<Item, 'hidden' | 'pick'>, scope: Scope) =>
+  !it.hidden && (scope === 'all' || it.pick);
+
+/** 公開ページのタイトル（OGP にも使う）。 */
+export const publicTitle = (name: string) =>
+  name ? `${name} の死ぬまでにやりたいこと` : '死ぬまでにやりたいこと';
+
+/** 公開ページの OGP 説明文。items は表示順に並んでいること。 */
+export function publicDescription(items: Pick<Item, 'title' | 'doneAt'>[]): string {
+  if (!items.length) return 'まだ公開されている項目はありません。';
+  const done = items.filter((x) => x.doneAt).length;
+  const head = items.slice(0, 3).map((x) => x.title).join('／');
+  return `${items.length}件のうち${done}件を達成。${head}${items.length > 3 ? '／…' : ''}`;
 }
 
 export const DEFAULT_SETTINGS: Settings = { target: 10, birth: null, until: 85 };

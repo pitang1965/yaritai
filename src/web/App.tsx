@@ -7,13 +7,14 @@ import {
   norm,
   PRI,
   pickMessage,
+  type Publish,
   type Settings,
   sortItems,
   today,
   WHEN,
   yearsLeft,
 } from '../domain/item';
-import { deleteItem, saveItem, saveSettings } from '../server/functions';
+import { deleteItem, renewPublishToken, saveItem, savePublish, saveSettings } from '../server/functions';
 import { EditSheet, SettingsSheet } from './sheets';
 
 type Tab = 'find' | 'mine' | 'pick';
@@ -25,10 +26,11 @@ const CAT = Object.fromEntries(CATEGORIES.map((c) => [c.key, c])) as Record<
 >;
 
 
-export function App(props: { items: Item[]; settings: Settings }) {
+export function App(props: { items: Item[]; settings: Settings; publish: Publish }) {
   const router = useRouter();
   const [items, setItems] = useState(props.items);
   const [settings, setSettings] = useState(props.settings);
+  const [publish, setPublish] = useState(props.publish);
   // 並び順と絞り込みに使う一覧。達成の切り替え直後は少し遅らせ、行がすぐ消えて「効かない」ように見えるのを防ぐ。
   const [settled, setSettled] = useState(props.items);
   const settleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -80,7 +82,8 @@ export function App(props: { items: Item[]; settings: Settings }) {
     setItems(props.items);
     setSettled(props.items);
     setSettings(props.settings);
-  }, [props.items, props.settings]);
+    setPublish(props.publish);
+  }, [props.items, props.settings, props.publish]);
 
   const findBySrc = (src: string) => items.find((x) => x.src === src);
   const findByTitle = (t: string) => items.find((x) => norm(x.title) === norm(t));
@@ -109,6 +112,7 @@ export function App(props: { items: Item[]; settings: Settings }) {
       doneAt: null,
       pick: false,
       src,
+      hidden: false,
       createdAt: Date.now(),
     };
     commit([it, ...items]);
@@ -165,7 +169,25 @@ export function App(props: { items: Item[]; settings: Settings }) {
   };
 
   const years = yearsLeft(settings);
-  const rowProps = { onDone: toggleDone, onPick: togglePick, onRemove: removeItem, onEdit: setEditing };
+  const rowProps = {
+    onDone: toggleDone,
+    onPick: togglePick,
+    onRemove: removeItem,
+    onEdit: setEditing,
+    showLock: publish.on,
+  };
+
+  // 公開リンクの変更。結果（URL）を画面に反映する。表示名の確定と「公開しない」が続けて
+  // 起きても後の操作が勝つよう、項目の保存と同じキューで1件ずつ送る。
+  const changePublish = (send: () => Promise<Publish>) => {
+    queue.current = queue.current.then(async () => {
+      try {
+        setPublish(await send());
+      } catch {
+        showToast({ msg: '公開リンクを変更できませんでした' });
+      }
+    });
+  };
   const editingItem = editing ? items.find((x) => x.id === editing) : undefined;
 
   return (
@@ -174,7 +196,7 @@ export function App(props: { items: Item[]; settings: Settings }) {
         <div className="title-row">
           <h1>死ぬまでにやりたいこと</h1>
           <button className="icon-btn" type="button" onClick={() => setSettingsOpen(true)}>
-            設定
+            ⚙ 設定
           </button>
         </div>
         <div className="stats">
@@ -253,6 +275,7 @@ export function App(props: { items: Item[]; settings: Settings }) {
       {editingItem && (
         <EditSheet
           item={editingItem}
+          publish={publish}
           onClose={() => setEditing(null)}
           onSave={(it) => {
             updateItem(it);
@@ -269,6 +292,9 @@ export function App(props: { items: Item[]; settings: Settings }) {
         <SettingsSheet
           settings={settings}
           pickCount={pickCount}
+          publish={publish}
+          onPublish={(p) => changePublish(() => savePublish({ data: p }))}
+          onRenew={() => changePublish(() => renewPublishToken())}
           onClose={() => setSettingsOpen(false)}
           onSave={(s) => {
             setSettings(s);
@@ -508,6 +534,8 @@ type RowHandlers = {
   onPick: (it: Item) => void;
   onRemove: (id: string) => void;
   onEdit: (id: string) => void;
+  /** 公開リンクがオンのとき、非公開の項目に鍵をつける */
+  showLock: boolean;
 };
 
 /** settled（並び替え用の少し古い一覧）で順番と絞り込みを決め、表示は最新の items を使う。 */
@@ -560,6 +588,7 @@ function ItemRow({ it, row, mode }: { it: Item; row: RowHandlers; mode?: 'pick' 
           {when && it.when !== 'any' && <span>{when.name}</span>}
           {cost && <span>{cost.name}</span>}
           {it.doneAt && <span>{it.doneAt} 達成</span>}
+          {row.showLock && it.hidden && <span aria-label="非公開">🔒</span>}
         </span>
         {it.memo && <span className="meta">{it.memo.length > 40 ? `${it.memo.slice(0, 40)}…` : it.memo}</span>}
       </button>

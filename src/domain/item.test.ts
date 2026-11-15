@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { IDEAS } from './ideas';
-import { type Item, norm, pickMessage, sortItems, yearsLeft } from './item';
+import { type Item, isPublic, norm, pickMessage, publicDescription, sortItems, yearsLeft } from './item';
 
 const item = (o: Partial<Item>): Item => ({
   id: 'x',
@@ -13,6 +13,7 @@ const item = (o: Partial<Item>): Item => ({
   doneAt: null,
   pick: false,
   src: null,
+  hidden: false,
   createdAt: 0,
   ...o,
 });
@@ -58,5 +59,24 @@ describe('IDEAS', () => {
     expect(new Set(IDEAS.map((x) => x.id)).size).toBe(IDEAS.length);
     expect(new Set(IDEAS.map((x) => x.title)).size).toBe(IDEAS.length);
     for (const x of IDEAS) expect(x.id.startsWith(`${x.cat}-`)).toBe(true);
+  });
+});
+
+describe('isPublic', () => {
+  it('非公開は範囲に関係なく出さない。厳選の範囲では ★ のものだけ', () => {
+    expect(isPublic(item({}), 'all')).toBe(true);
+    expect(isPublic(item({}), 'pick')).toBe(false);
+    expect(isPublic(item({ pick: true }), 'pick')).toBe(true);
+    expect(isPublic(item({ pick: true, hidden: true }), 'pick')).toBe(false);
+    expect(isPublic(item({ hidden: true }), 'all')).toBe(false);
+  });
+});
+
+describe('publicDescription', () => {
+  it('件数・達成数と先頭3件のタイトル', () => {
+    const list = ['a', 'b', 'c', 'd'].map((t, i) => item({ title: t, doneAt: i === 3 ? '2026-01-01' : null }));
+    expect(publicDescription(list)).toBe('4件のうち1件を達成。a／b／c／…');
+    expect(publicDescription(list.slice(0, 2))).toBe('2件のうち0件を達成。a／b');
+    expect(publicDescription([])).toBe('まだ公開されている項目はありません。');
   });
 });

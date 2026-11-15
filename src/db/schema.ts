@@ -96,6 +96,7 @@ export const items = sqliteTable(
     doneAt: text('done_at'),
     pick: integer('pick', { mode: 'boolean' }).notNull().default(false),
     src: text('src'),
+    hidden: integer('hidden', { mode: 'boolean' }).notNull().default(false),
     createdAt: integer('created_at').notNull(),
   },
   (t) => [index('items_user_id_idx').on(t.userId)],
@@ -108,4 +109,9 @@ export const settings = sqliteTable('settings', {
   target: integer('target').notNull().default(10),
   birth: integer('birth'),
   until: integer('until').notNull().default(85),
+  // 公開リンク。token はオフにしても残し、オンに戻すと同じURLになる。
+  pubOn: integer('pub_on', { mode: 'boolean' }).notNull().default(false),
+  pubScope: text('pub_scope').notNull().default('all'),
+  pubName: text('pub_name').notNull().default(''),
+  pubToken: text('pub_token').unique(),
 });
