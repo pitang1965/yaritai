@@ -1,5 +1,5 @@
 import { useRouter } from '@tanstack/react-router';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { CATEGORIES, type CategoryKey, IDEAS, type Idea } from '../domain/ideas';
 import {
   COST,
@@ -33,6 +33,9 @@ export function App(props: { items: Item[]; settings: Settings }) {
   const [settled, setSettled] = useState(props.items);
   const settleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [tab, setTab] = useState<Tab>('find');
+  // タブごとのスクロール位置。戻ってきたときに同じ位置から続きを見られるようにする。
+  const scrollPos = useRef<Partial<Record<Tab, number>>>({});
+  useLayoutEffect(() => window.scrollTo(0, scrollPos.current[tab] ?? 0), [tab]);
   const [editing, setEditing] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
@@ -78,6 +81,11 @@ export function App(props: { items: Item[]; settings: Settings }) {
 
   const findBySrc = (src: string) => items.find((x) => x.src === src);
   const findByTitle = (t: string) => items.find((x) => norm(x.title) === norm(t));
+  // 「見つける」の各行の ✓ 判定用。行ごとに items をなめると件数が多いとき重いので、先に集合にする。
+  const added = useMemo(
+    () => ({ src: new Set(items.map((x) => x.src)), title: new Set(items.map((x) => norm(x.title))) }),
+    [items],
+  );
 
   const addItem = (title: string, cat: CategoryKey, src: string | null): Item | null => {
     title = title.trim();
@@ -188,9 +196,10 @@ export function App(props: { items: Item[]; settings: Settings }) {
       </header>
 
       <main>
-        {tab === 'find' && (
+        {/* 「見つける」は隠すだけにして、絞り込みや書きかけのタイトルをタブ移動で失わない */}
+        <div hidden={tab !== 'find'}>
           <FindTab
-            isAdded={(idea) => !!(findBySrc(idea.id) || findByTitle(idea.title))}
+            isAdded={(idea) => added.src.has(idea.id) || added.title.has(norm(idea.title))}
             onAdd={(idea, title) => addItem(title, idea.cat, idea.id)}
             onRemove={(idea) => {
               const it = findBySrc(idea.id) || findByTitle(idea.title);
@@ -198,7 +207,7 @@ export function App(props: { items: Item[]; settings: Settings }) {
             }}
             showToast={showToast}
           />
-        )}
+        </div>
         {tab === 'mine' && (
           <MineTab
             items={items}
@@ -226,8 +235,9 @@ export function App(props: { items: Item[]; settings: Settings }) {
               type="button"
               aria-selected={tab === t.key}
               onClick={() => {
+                if (t.key === tab) return window.scrollTo(0, 0); // 今のタブをもう一度押したら先頭へ
+                scrollPos.current[tab] = window.scrollY;
                 setTab(t.key);
-                window.scrollTo(0, 0);
               }}
             >
               {t.icon}
