@@ -82,7 +82,7 @@ export function App(props: { items: Item[]; settings: Settings }) {
   const addItem = (title: string, cat: CategoryKey, src: string | null): Item | null => {
     title = title.trim();
     if (!title) return null;
-    const dup = src ? findBySrc(src) : findByTitle(title);
+    const dup = (src && findBySrc(src)) || findByTitle(title);
     if (dup) {
       showToast({ msg: 'もうマイリストに入っています' });
       return null;
@@ -102,7 +102,7 @@ export function App(props: { items: Item[]; settings: Settings }) {
     };
     commit([it, ...items]);
     persist(() => saveItem({ data: it }));
-    showToast({ msg: 'マイリストに追加しました' });
+    showToast({ msg: 'マイリストに追加しました', action: { label: '編集', fn: () => setEditing(it.id) } });
     return it;
   };
 
@@ -191,11 +191,7 @@ export function App(props: { items: Item[]; settings: Settings }) {
         {tab === 'find' && (
           <FindTab
             isAdded={(idea) => !!(findBySrc(idea.id) || findByTitle(idea.title))}
-            onAdd={(idea) => {
-              const it = addItem(idea.title, idea.cat, idea.id);
-              // 例のあるアイデアは、そのまま編集を開いて自分の言葉に直せるようにする。
-              if (it && idea.examples) setEditing(it.id);
-            }}
+            onAdd={(idea, title) => addItem(title, idea.cat, idea.id)}
             onRemove={(idea) => {
               const it = findBySrc(idea.id) || findByTitle(idea.title);
               if (it) removeItem(it.id);
@@ -210,7 +206,9 @@ export function App(props: { items: Item[]; settings: Settings }) {
             row={rowProps}
             onAdd={(title) => {
               const it = addItem(title, 'life', null);
-              if (it) setEditing(it.id);
+              if (!it) return;
+              setEditing(it.id);
+              showToast({ msg: 'マイリストに追加しました' }); // 編集シートを開くので「編集」ボタンは要らない
             }}
           />
         )}
@@ -351,13 +349,15 @@ const catOptions = CATEGORIES.map((c) => ({ key: c.key, name: c.name, cat: c.key
 
 function FindTab(props: {
   isAdded: (idea: Idea) => boolean;
-  onAdd: (idea: Idea) => void;
+  onAdd: (idea: Idea, title: string) => void;
   onRemove: (idea: Idea) => void;
   showToast: (t: Toast) => void;
 }) {
   const [cat, setCat] = useState<CategoryKey | 'all'>('all');
   const [q, setQ] = useState('');
   const [flash, setFlash] = useState<string | null>(null);
+  // 例のあるアイデアは、追加する前にその行でタイトルを書き直してもらう
+  const [draft, setDraft] = useState<{ id: string; title: string } | null>(null);
   const nq = norm(q);
   const list = IDEAS.filter(
     (s) =>
@@ -373,6 +373,7 @@ function FindTab(props: {
     }
     const s = pool[Math.floor(Math.random() * pool.length)];
     setQ('');
+    setDraft(null);
     setFlash(s.id);
     setTimeout(() => {
       document.getElementById(`idea-${s.id}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -391,19 +392,68 @@ function FindTab(props: {
           placeholder="キーワードで探す"
           aria-label="アイデアを検索"
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setDraft(null); // 絞り込みで行が出入りすると autoFocus が検索欄の入力を奪うため
+          }}
         />
         <button className="btn ghost" type="button" onClick={random}>
           ランダム
         </button>
       </div>
-      <Chips options={[{ key: 'all' as const, name: 'すべて' }, ...catOptions]} value={cat} onChange={setCat} />
+      <Chips
+        options={[{ key: 'all' as const, name: 'すべて' }, ...catOptions]}
+        value={cat}
+        onChange={(k) => {
+          setCat(k);
+          setDraft(null);
+        }}
+      />
       <div className="list">
         {list.length === 0 ? (
           <div className="empty">見つかりませんでした。思いついたものはマイリストで直接追加できます。</div>
         ) : (
           list.map((s) => {
             const added = props.isAdded(s);
+            if (draft?.id === s.id) {
+              const submit = () => {
+                if (!draft.title.trim()) return;
+                props.onAdd(s, draft.title);
+                setDraft(null);
+              };
+              return (
+                <form
+                  key={s.id}
+                  id={`idea-${s.id}`}
+                  className="row draft"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    submit();
+                  }}
+                >
+                  <div className="main">
+                    <input
+                      type="text"
+                      maxLength={80}
+                      autoFocus
+                      aria-label="やりたいこと"
+                      value={draft.title}
+                      onChange={(e) => setDraft({ id: s.id, title: e.target.value })}
+                      onKeyDown={(e) => e.key === 'Escape' && setDraft(null)}
+                    />
+                    <div className="meta">
+                      <span>例：{s.examples?.join('、')}</span>
+                    </div>
+                  </div>
+                  <button className="btn ghost" type="button" onClick={() => setDraft(null)}>
+                    やめる
+                  </button>
+                  <button className="btn" type="submit" disabled={!draft.title.trim()}>
+                    追加
+                  </button>
+                </form>
+              );
+            }
             return (
               <div key={s.id} id={`idea-${s.id}`} className={`row${flash === s.id ? ' flash' : ''}`}>
                 <div className="main">
@@ -421,7 +471,13 @@ function FindTab(props: {
                   type="button"
                   aria-pressed={added}
                   aria-label={added ? 'マイリストから外す' : 'マイリストに追加'}
-                  onClick={() => (added ? props.onRemove(s) : props.onAdd(s))}
+                  onClick={() =>
+                    added
+                      ? props.onRemove(s)
+                      : s.examples
+                        ? setDraft({ id: s.id, title: s.title })
+                        : props.onAdd(s, s.title)
+                  }
                 >
                   {added ? '✓' : '＋'}
                 </button>

@@ -129,3 +129,7 @@ nav.tabs button[aria-selected="true"] { color: var(--accent); font-weight: 700 }
 .doc .updated { font-size: 12px; margin: 0 }
 .landing .foot { margin-top: 32px; font-size: 12px }
 .landing .foot a { color: var(--muted) }
+.row.draft { flex-wrap: wrap; background: var(--accent-soft) }
+.row.draft .main { flex-basis: 100% }
+.row.draft input { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 9px 12px }
+.row.draft .btn { flex: 1 }
