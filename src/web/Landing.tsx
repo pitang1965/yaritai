@@ -14,6 +14,7 @@ export function Landing() {
         <li>{IDEAS.length}件のアイデアから選べる</li>
         <li>「死ぬまでに絶対やる」を厳選して、達成を記録できる</li>
         <li>スマホでもパソコンでも、同じリストを使える</li>
+        <li>リストを URL で公開して、家族や友だちに見せられる（見せたくない項目は隠せる）</li>
       </ul>
       <div>
         <button
