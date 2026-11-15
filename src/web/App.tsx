@@ -35,7 +35,10 @@ export function App(props: { items: Item[]; settings: Settings }) {
   const [tab, setTab] = useState<Tab>('find');
   // タブごとのスクロール位置。戻ってきたときに同じ位置から続きを見られるようにする。
   const scrollPos = useRef<Partial<Record<Tab, number>>>({});
-  useLayoutEffect(() => window.scrollTo(0, scrollPos.current[tab] ?? 0), [tab]);
+  // scrollTo は新しめのブラウザで Promise を返すので、戻り値を effect から返さない（React が片付け関数と誤解する）
+  useLayoutEffect(() => {
+    window.scrollTo(0, scrollPos.current[tab] ?? 0);
+  }, [tab]);
   const [editing, setEditing] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
