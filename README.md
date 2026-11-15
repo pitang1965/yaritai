@@ -6,7 +6,7 @@
 
 <img src="docs/images/screenshot.png" alt="「アイデアから見つける」画面" width="320">
 
-- 287件のアイデア集から選んでマイリストに入れる。自分で書いてもよい
+- 280件以上のアイデア集から選んでマイリストに入れる。自分で書いてもよい
 - 「死ぬまでに絶対やる」を厳選して、達成を記録する
 - 公開リンク（推測しづらい URL）で、リストをログインしていない人にも見せる
 
@@ -36,7 +36,7 @@ Google OAuth のリダイレクト先は `http://localhost:3000/api/auth/callbac
 | コマンド | 内容 |
 |---|---|
 | `npm run dev` | 開発サーバー |
-| `npm run typecheck` | 型チェック |
+| `npm run typecheck` | 型チェック（clone 直後は先に `npm run dev` か `npm run build` を一度動かす。`src/routeTree.gen.ts` はそこで作られる） |
 | `npm test` | テスト（vitest） |
 | `npm run db:generate` | `src/db/schema.ts` からマイグレーション SQL を作る |
 | `npm run db:migrate` | ローカルの D1 にマイグレーションを当てる |
@@ -53,3 +53,5 @@ npm run deploy
 ```
 
 本番の秘密の値（`BETTER_AUTH_SECRET`、`GOOGLE_CLIENT_ID`、`GOOGLE_CLIENT_SECRET`）は `wrangler secret put` で設定します。
+
+Google Cloud Console の OAuth クライアントには、本番のリダイレクト先 `https://yaritai.over40web.club/api/auth/callback/google` も登録してください。登録していないと、本番の Google ログインが `redirect_uri_mismatch` になります。
