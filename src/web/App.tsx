@@ -518,30 +518,37 @@ function ordered(items: Item[], settled: Item[], filter: (x: Item) => boolean): 
     .filter((x): x is Item => !!x);
 }
 
-function ItemRow({ it, row }: { it: Item; row: RowHandlers }) {
+/**
+ * mode: 'pick' は厳選欄（× なし）、'cand' は厳選の候補欄（★ だけ。行を押しても厳選に入る）。
+ * 「厳選」タブでは押し間違いで達成・削除しないよう、できることを絞る。
+ */
+function ItemRow({ it, row, mode }: { it: Item; row: RowHandlers; mode?: 'pick' | 'cand' }) {
   const done = !!it.doneAt;
   const pri = PRI.find((x) => x.key === it.pri);
   const when = WHEN.find((x) => x.key === it.when);
   const cost = COST.find((x) => x.key === it.cost);
   return (
     <div className={`row${done ? ' done' : ''}`}>
-      <button
-        className="check-wrap"
-        type="button"
-        aria-pressed={done}
-        aria-label={done ? '未達成に戻す' : '達成にする'}
-        onClick={() => row.onDone(it)}
-      >
-        <span className="check" aria-hidden="true">
-          ✓
-        </span>
-        <span className="check-lbl">{done ? '達成' : '未達成'}</span>
-      </button>
+      {mode !== 'cand' && (
+        <button
+          className="check-wrap"
+          type="button"
+          aria-pressed={done}
+          aria-label={done ? '未達成に戻す' : '達成にする'}
+          onClick={() => row.onDone(it)}
+        >
+          <span className="check" aria-hidden="true">
+            ✓
+          </span>
+          <span className="check-lbl">{done ? '達成' : '未達成'}</span>
+        </button>
+      )}
       <button
         type="button"
         className="main"
         style={{ textAlign: 'left', background: 'none', border: 'none', padding: 0 }}
-        onClick={() => row.onEdit(it.id)}
+        aria-label={mode === 'cand' ? `「${it.title}」を厳選に入れる` : undefined}
+        onClick={() => (mode === 'cand' ? row.onPick(it) : row.onEdit(it.id))}
       >
         <span className="t">{it.title}</span>
         <span className="meta">
@@ -565,9 +572,11 @@ function ItemRow({ it, row }: { it: Item; row: RowHandlers }) {
       >
         ★
       </button>
-      <button className="del" type="button" aria-label={`「${it.title}」を削除`} onClick={() => row.onRemove(it.id)}>
-        ×
-      </button>
+      {!mode && (
+        <button className="del" type="button" aria-label={`「${it.title}」を削除`} onClick={() => row.onRemove(it.id)}>
+          ×
+        </button>
+      )}
     </div>
   );
 }
@@ -669,7 +678,7 @@ function PickTab(props: {
       </div>
       <div className="list">
         {picks.length ? (
-          picks.map((x) => <ItemRow key={x.id} it={x} row={props.row} />)
+          picks.map((x) => <ItemRow key={x.id} it={x} row={props.row} mode="pick" />)
         ) : (
           <div className="empty">まだ選ばれていません。下の候補の ★ を押してください。</div>
         )}
@@ -677,7 +686,7 @@ function PickTab(props: {
       <h2 style={{ marginTop: 18 }}>候補（★ で厳選に入れる）</h2>
       <div className="list">
         {cand.length ? (
-          cand.map((x) => <ItemRow key={x.id} it={x} row={props.row} />)
+          cand.map((x) => <ItemRow key={x.id} it={x} row={props.row} mode="cand" />)
         ) : (
           <div className="empty">
             {items.length
