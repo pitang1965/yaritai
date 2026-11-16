@@ -195,7 +195,7 @@ export function App(props: { items: Item[]; settings: Settings; publish: Publish
     <div className="app">
       <header className="top">
         <div className="title-row">
-          <h1>死ぬまでにやりたいこと</h1>
+          <h1>死ぬまでに<wbr />やりたいこと</h1>
           <div className="top-btns">
             <button className="icon-btn" type="button" onClick={() => setPublishOpen(true)}>
               🔗 {publish.on ? '公開中' : '公開する'}
