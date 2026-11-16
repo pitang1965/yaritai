@@ -15,7 +15,7 @@ import {
   yearsLeft,
 } from '../domain/item';
 import { deleteItem, renewPublishToken, saveItem, savePublish, saveSettings } from '../server/functions';
-import { EditSheet, SettingsSheet } from './sheets';
+import { EditSheet, PublishSheet, SettingsSheet } from './sheets';
 
 type Tab = 'find' | 'mine' | 'pick';
 type Toast = { msg: string; action?: { label: string; fn: () => void } };
@@ -43,6 +43,7 @@ export function App(props: { items: Item[]; settings: Settings; publish: Publish
   }, [tab]);
   const [editing, setEditing] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [sync, setSync] = useState('保存済み（どの端末でも同じリスト）');
@@ -195,9 +196,14 @@ export function App(props: { items: Item[]; settings: Settings; publish: Publish
       <header className="top">
         <div className="title-row">
           <h1>死ぬまでにやりたいこと</h1>
-          <button className="icon-btn" type="button" onClick={() => setSettingsOpen(true)}>
-            ⚙ 設定
-          </button>
+          <div className="top-btns">
+            <button className="icon-btn" type="button" onClick={() => setPublishOpen(true)}>
+              🔗 {publish.on ? '公開中' : '公開する'}
+            </button>
+            <button className="icon-btn" type="button" onClick={() => setSettingsOpen(true)}>
+              ⚙ 設定
+            </button>
+          </div>
         </div>
         <div className="stats">
           <span>
@@ -292,9 +298,6 @@ export function App(props: { items: Item[]; settings: Settings; publish: Publish
         <SettingsSheet
           settings={settings}
           pickCount={pickCount}
-          publish={publish}
-          onPublish={(p) => changePublish(() => savePublish({ data: p }))}
-          onRenew={() => changePublish(() => renewPublishToken())}
           onClose={() => setSettingsOpen(false)}
           onSave={(s) => {
             setSettings(s);
@@ -302,6 +305,15 @@ export function App(props: { items: Item[]; settings: Settings; publish: Publish
             setSettingsOpen(false);
             showToast({ msg: '設定を保存しました' });
           }}
+          showToast={showToast}
+        />
+      )}
+      {publishOpen && (
+        <PublishSheet
+          publish={publish}
+          onPublish={(p) => changePublish(() => savePublish({ data: p }))}
+          onRenew={() => changePublish(() => renewPublishToken())}
+          onClose={() => setPublishOpen(false)}
           showToast={showToast}
         />
       )}

@@ -36,6 +36,7 @@ button { cursor: pointer }
 header.top { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 14px 16px 10px; border-bottom: 1px solid var(--line) }
 .title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px }
 h1 { font-family: var(--font-display); font-size: 19px; font-weight: 700; margin: 0; letter-spacing: .02em; text-wrap: balance }
+.top-btns { display: flex; gap: 6px; flex-shrink: 0 }
 .icon-btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 13px; min-height: 36px }
 .stats { display: flex; gap: 16px; margin-top: 8px; font-size: 13px; color: var(--muted); flex-wrap: wrap }
 .stats b { color: var(--ink); font-variant-numeric: tabular-nums; font-size: 15px }

@@ -147,9 +147,6 @@ export function EditSheet(props: {
 export function SettingsSheet(props: {
   settings: Settings;
   pickCount: number;
-  publish: Publish;
-  onPublish: (p: Omit<Publish, 'token'>) => void;
-  onRenew: () => void;
   onClose: () => void;
   onSave: (s: Settings) => void;
   showToast: (t: { msg: string }) => void;
@@ -209,7 +206,6 @@ export function SettingsSheet(props: {
         />
       </div>
       <p className="lead">生まれた年を入れると、残りの年数と「何年に1件ずつ」の目安が出ます。</p>
-      <PublishField publish={props.publish} onPublish={props.onPublish} onRenew={props.onRenew} showToast={props.showToast} />
       <p className="lead">
         <a href="/privacy">プライバシーポリシー</a>
       </p>
@@ -234,11 +230,12 @@ export function SettingsSheet(props: {
   );
 }
 
-/** 設定シートの「公開リンク」欄。変更はその場で保存する（オンにしたらすぐ URL を見せたいため）。 */
-function PublishField(props: {
+/** 公開リンクのシート。変更はその場で保存する（オンにしたらすぐ URL を見せたいため）ので、保存ボタンはない。 */
+export function PublishSheet(props: {
   publish: Publish;
   onPublish: (p: Omit<Publish, 'token'>) => void;
   onRenew: () => void;
+  onClose: () => void;
   showToast: (t: { msg: string }) => void;
 }) {
   const p = props.publish;
@@ -247,63 +244,71 @@ function PublishField(props: {
   const save = (o: Partial<Omit<Publish, 'token'>>) =>
     props.onPublish({ on: p.on, scope: p.scope, name: name.trim(), ...o });
   return (
-    <div className="field">
-      <span className="lbl">公開リンク（URL を知っている人だけが見られます）</span>
-      <Seg options={ON_OFF} value={p.on ? 'on' : 'off'} onChange={(k) => k && save({ on: k === 'on' })} />
-      {p.on && (
-        <>
-          <span className="lbl">見せる範囲（非公開の項目とメモは出しません）</span>
-          <Seg options={SCOPES} value={p.scope} onChange={(k) => k && save({ scope: k })} />
-          <label htmlFor="pubName">表示名（空欄なら名前を出しません）</label>
-          <input
-            id="pubName"
-            type="text"
-            maxLength={30}
-            placeholder="例 ピータン"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onBlur={() => name.trim() !== p.name && save({})}
-          />
-          {url && (
-            <>
-              <input type="text" readOnly aria-label="公開リンクの URL" value={url} onFocus={(e) => e.target.select()} />
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <button
-                  className="btn ghost"
-                  type="button"
-                  onClick={() =>
-                    navigator.clipboard.writeText(url).then(
-                      () => props.showToast({ msg: 'URL をコピーしました' }),
-                      () => props.showToast({ msg: 'コピーできませんでした' }),
-                    )
-                  }
-                >
-                  コピー
-                </button>
-                {'share' in navigator && (
+    <Sheet title="公開リンク" onClose={props.onClose}>
+      <div className="field">
+        <span className="lbl">URL を知っている人だけが見られます</span>
+        <Seg options={ON_OFF} value={p.on ? 'on' : 'off'} onChange={(k) => k && save({ on: k === 'on' })} />
+        {p.on && (
+          <>
+            <span className="lbl">見せる範囲（非公開の項目とメモは出しません）</span>
+            <Seg options={SCOPES} value={p.scope} onChange={(k) => k && save({ scope: k })} />
+            <label htmlFor="pubName">表示名（空欄なら名前を出しません）</label>
+            <input
+              id="pubName"
+              type="text"
+              maxLength={30}
+              placeholder="例 ピータン"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={() => name.trim() !== p.name && save({})}
+            />
+            {url && (
+              <>
+                <input type="text" readOnly aria-label="公開リンクの URL" value={url} onFocus={(e) => e.target.select()} />
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   <button
                     className="btn ghost"
                     type="button"
-                    onClick={() => navigator.share({ url }).catch(() => {})} // 共有を取り消したときも何もしない
+                    onClick={() =>
+                      navigator.clipboard.writeText(url).then(
+                        () => props.showToast({ msg: 'URL をコピーしました' }),
+                        () => props.showToast({ msg: 'コピーできませんでした' }),
+                      )
+                    }
                   >
-                    共有
+                    コピー
                   </button>
-                )}
-                <a className="btn ghost" href={url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                  公開ページを見る
-                </a>
-                <button
-                  className="btn ghost"
-                  type="button"
-                  onClick={() => window.confirm('URL を作り直します。古い URL は見られなくなります。よろしいですか？') && props.onRenew()}
-                >
-                  URL を作り直す
-                </button>
-              </div>
-            </>
-          )}
-        </>
-      )}
-    </div>
+                  {'share' in navigator && (
+                    <button
+                      className="btn ghost"
+                      type="button"
+                      onClick={() => navigator.share({ url }).catch(() => {})} // 共有を取り消したときも何もしない
+                    >
+                      共有
+                    </button>
+                  )}
+                  <a className="btn ghost" href={url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                    公開ページを見る
+                  </a>
+                  <button
+                    className="btn ghost"
+                    type="button"
+                    onClick={() => window.confirm('URL を作り直します。古い URL は見られなくなります。よろしいですか？') && props.onRenew()}
+                  >
+                    URL を作り直す
+                  </button>
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
+      <div className="actions">
+        <span />
+        <button className="btn ghost" type="button" onClick={props.onClose}>
+          閉じる
+        </button>
+      </div>
+    </Sheet>
   );
 }
