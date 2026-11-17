@@ -49,6 +49,8 @@ h2 { font-family: var(--font-display); font-size: 17px; font-weight: 700; margin
 .lead { color: var(--muted); font-size: 13px; margin: 0 0 12px }
 
 .chips { display: flex; gap: 6px; overflow-x: auto; padding: 0 16px 6px; margin: 0 -16px 8px; scrollbar-width: none }
+/* マウス操作では横スクロールできないので折り返して全部見せる */
+@media (pointer: fine) { .chips { flex-wrap: wrap } }
 .chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 13px; white-space: nowrap; min-height: 34px }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink) }
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px }
