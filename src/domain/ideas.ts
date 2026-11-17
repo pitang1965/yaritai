@@ -1,5 +1,5 @@
 // アイデア集。ID は一度公開したら変えない・使い回さない（項目の src から参照されるため）。
-// 新しいアイデアは各カテゴリの末尾に、次の番号で追加する。
+// 新しいアイデアは各カテゴリの末尾に、次の番号で追加する。暮らし・持ち物は home-01 から。
 // 似たアイデアは1つにまとめ、具体例を examples に入れる（タイトルには入れない）。
 
 export const CATEGORIES = [
@@ -12,7 +12,10 @@ export const CATEGORIES = [
 	{ key: 'people', name: '人と仲間', color: '#b5651d' },
 	{ key: 'health', name: '健康・からだ', color: '#8a9a1f' },
 	{ key: 'work', name: '仕事・お金', color: '#5b6b8c' },
-	{ key: 'life', name: '終活・暮らし', color: '#8a7a5a' },
+	{ key: 'home', name: '暮らし・持ち物', color: '#c39a2b' },
+	{ key: 'life', name: '終活・整理', color: '#8a7a5a' },
+	// 手入力で追加した項目の初期値。アイデアには使わない
+	{ key: 'other', name: 'その他', color: '#8c8c8c' },
 ] as const;
 
 export type CategoryKey = (typeof CATEGORIES)[number]['key'];
@@ -90,14 +93,12 @@ export const IDEAS: Idea[] = [
 	{ id: 'challenge-24', cat: 'challenge', title: '自転車で長い距離を走る', examples: ['琵琶湖一周', 'しまなみ海道'] },
 	{ id: 'challenge-25', cat: 'challenge', title: '不思議な体験をしてみる', examples: ['催眠術', '占い'] },
 	{ id: 'challenge-26', cat: 'challenge', title: 'テレビや映画に出る', examples: ['エキストラ', '雑誌', 'モデル'] },
-	{ id: 'challenge-27', cat: 'challenge', title: '憧れのブランドの服や車を手に入れる' },
 	{ id: 'challenge-28', cat: 'challenge', title: '好きなゲームで最上位ランクに到達する' },
 	{ id: 'challenge-29', cat: 'challenge', title: 'スタジオを借りてドラムを叩く' },
 	{ id: 'challenge-30', cat: 'challenge', title: '趣味探しで100個のことを試してみる' },
 	{ id: 'challenge-31', cat: 'challenge', title: '屋外シアターで映画を観る' },
 	{ id: 'challenge-32', cat: 'challenge', title: '自動運転の車に乗る' },
 	{ id: 'challenge-33', cat: 'challenge', title: '特別なお酒やコーヒーを味わう', examples: ['生まれ年のワイン', 'コピ・ルアク', '電氣ブラン'] },
-	{ id: 'challenge-34', cat: 'challenge', title: '月の土地を手に入れる' },
 	{ id: 'challenge-35', cat: 'challenge', title: '映画を1年で50本観る', examples: ['1年で100本', '生涯で1000本'] },
 	// 学び
 	{ id: 'learn-01', cat: 'learn', title: '外国語で日常会話ができるようになる', examples: ['英語', '韓国語', 'イタリア語', 'ポルトガル語'] },
@@ -291,15 +292,30 @@ export const IDEAS: Idea[] = [
 	{ id: 'work-19', cat: 'work', title: '場所に縛られずに働く', examples: ['フルリモート'] },
 	{ id: 'work-20', cat: 'work', title: '働かなくても入る収入をつくる', examples: ['月5万円'] },
 	{ id: 'work-21', cat: 'work', title: '人の役に立つ実感のある仕事をする', examples: ['介護タクシー', '介護の仕事', '子どもの学びや育ちを支える', '地域の送迎や見守り'] },
-	// 終活・暮らし
-	{ id: 'life-01', cat: 'life', title: '理想の家に住む', examples: ['家を建てる', 'フルリノベーション', '森の中の家', '縁側のある古民家', '緑の見える家'] },
+	// 暮らし・持ち物（旅・挑戦などから移したものは元の ID のまま）
+	{ id: 'challenge-27', cat: 'home', title: '憧れのブランドの服や車を手に入れる' },
+	{ id: 'challenge-34', cat: 'home', title: '月の土地を手に入れる' },
+	{ id: 'life-01', cat: 'home', title: '理想の家に住む', examples: ['家を建てる', 'フルリノベーション', '森の中の家', '縁側のある古民家', '緑の見える家'] },
+	{ id: 'life-03', cat: 'home', title: '日記を1年続ける' },
+	{ id: 'life-04', cat: 'home', title: '着物を自分で着て出かける' },
+	{ id: 'life-05', cat: 'home', title: '作物を育てる', examples: ['ベランダの家庭菜園', '米づくり'] },
+	{ id: 'life-06', cat: 'home', title: '田舎で暮らしてみる', examples: ['自給自足に近い暮らし'] },
+	{ id: 'life-07', cat: 'home', title: '二拠点生活をする', examples: ['別荘を持つ'] },
+	{ id: 'life-08', cat: 'home', title: '家を心地いい場所に整える', examples: ['壁一面の本棚', '映画館みたいな部屋', '良いオーディオ', '憧れの家電'] },
+	{ id: 'life-18', cat: 'home', title: '養蜂をする' },
+	{ id: 'life-19', cat: 'home', title: '自宅にサウナや温泉をつくる' },
+	{ id: 'life-20', cat: 'home', title: '好きなものを集めて棚1つ分飾る', examples: ['万年筆', '絵', 'レコード'] },
+	{ id: 'life-21', cat: 'home', title: 'シェアハウスを開く' },
+	{ id: 'life-22', cat: 'home', title: 'ハンモックで昼からビールを飲む' },
+	{ id: 'life-23', cat: 'home', title: '部屋に花を絶やさず3か月飾る', examples: ['1年続ける'] },
+	{ id: 'life-24', cat: 'home', title: '憧れの町に住む', examples: ['京都', '函館', 'パリ'] },
+	{ id: 'life-25', cat: 'home', title: '良い庭を持つ', examples: ['大きな庭でガーデニング'] },
+	{ id: 'life-27', cat: 'home', title: '一生ものを手に入れる', examples: ['オーダーメイドの服', '一生もののカバン', '一緒に時を刻む腕時計'] },
+	{ id: 'life-28', cat: 'home', title: 'ゴミをほとんど出さずに1か月暮らす' },
+	{ id: 'life-29', cat: 'home', title: '一度ひとり暮らしをしてみる', examples: ['1か月だけ部屋を借りる', '家族と相談して期間限定で', 'ウィークリーマンション'] },
+	{ id: 'life-30', cat: 'home', title: '都会で暮らしてみる', examples: ['都心のマンションで1か月', '歩いて何でもそろう暮らし', '夜遅くまで街を楽しむ'] },
+	// 終活・整理
 	{ id: 'life-02', cat: 'life', title: '持ち物を半分に減らす', examples: ['ときめく物だけを残す', 'ミニマリストになる'] },
-	{ id: 'life-03', cat: 'life', title: '日記を1年続ける' },
-	{ id: 'life-04', cat: 'life', title: '着物を自分で着て出かける' },
-	{ id: 'life-05', cat: 'life', title: '作物を育てる', examples: ['ベランダの家庭菜園', '米づくり'] },
-	{ id: 'life-06', cat: 'life', title: '田舎で暮らしてみる', examples: ['自給自足に近い暮らし'] },
-	{ id: 'life-07', cat: 'life', title: '二拠点生活をする', examples: ['別荘を持つ'] },
-	{ id: 'life-08', cat: 'life', title: '家を心地いい場所に整える', examples: ['壁一面の本棚', '映画館みたいな部屋', '良いオーディオ', '憧れの家電'] },
 	{ id: 'life-09', cat: 'life', title: 'エンディングノートを書く' },
 	{ id: 'life-10', cat: 'life', title: '遺言書を作る' },
 	{ id: 'life-11', cat: 'life', title: 'デジタル遺品を整理する' },
@@ -309,19 +325,7 @@ export const IDEAS: Idea[] = [
 	{ id: 'life-15', cat: 'life', title: '実家を片付ける' },
 	{ id: 'life-16', cat: 'life', title: '親の介護について家族で話し合う' },
 	{ id: 'life-17', cat: 'life', title: '形見を渡す相手を決める' },
-	{ id: 'life-18', cat: 'life', title: '養蜂をする' },
-	{ id: 'life-19', cat: 'life', title: '自宅にサウナや温泉をつくる' },
-	{ id: 'life-20', cat: 'life', title: '好きなものを集めて棚1つ分飾る', examples: ['万年筆', '絵', 'レコード'] },
-	{ id: 'life-21', cat: 'life', title: 'シェアハウスを開く' },
-	{ id: 'life-22', cat: 'life', title: 'ハンモックで昼からビールを飲む' },
-	{ id: 'life-23', cat: 'life', title: '部屋に花を絶やさず3か月飾る', examples: ['1年続ける'] },
-	{ id: 'life-24', cat: 'life', title: '憧れの町に住む', examples: ['京都', '函館', 'パリ'] },
-	{ id: 'life-25', cat: 'life', title: '良い庭を持つ', examples: ['大きな庭でガーデニング'] },
 	{ id: 'life-26', cat: 'life', title: '自分が亡くなった後も人の役に立つものを残す' },
-	{ id: 'life-27', cat: 'life', title: '一生ものを手に入れる', examples: ['オーダーメイドの服', '一生もののカバン', '一緒に時を刻む腕時計'] },
-	{ id: 'life-28', cat: 'life', title: 'ゴミをほとんど出さずに1か月暮らす' },
-	{ id: 'life-29', cat: 'life', title: '一度ひとり暮らしをしてみる', examples: ['1か月だけ部屋を借りる', '家族と相談して期間限定で', 'ウィークリーマンション'] },
-	{ id: 'life-30', cat: 'life', title: '都会で暮らしてみる', examples: ['都心のマンションで1か月', '歩いて何でもそろう暮らし', '夜遅くまで街を楽しむ'] },
 ];
 
 /** ID からアイデアを引く。 */

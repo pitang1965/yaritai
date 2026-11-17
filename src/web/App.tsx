@@ -245,7 +245,7 @@ export function App(props: { items: Item[]; settings: Settings; publish: Publish
             settled={settled}
             row={rowProps}
             onAdd={(title) => {
-              const it = addItem(title, 'life', null);
+              const it = addItem(title, 'other', null);
               if (!it) return;
               setEditing(it.id);
               showToast({ msg: 'マイリストに追加しました' }); // 編集シートを開くので「編集」ボタンは要らない
@@ -396,7 +396,7 @@ function Chips<K extends string>(props: {
   );
 }
 
-const catOptions = CATEGORIES.map((c) => ({ key: c.key, name: c.name, cat: c.key }));
+const catOptions = CATEGORIES.filter((c) => c.key !== 'other').map((c) => ({ key: c.key, name: c.name, cat: c.key }));
 
 function FindTab(props: {
   isAdded: (idea: Idea) => boolean;
