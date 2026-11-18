@@ -58,11 +58,12 @@ describe('IDEAS', () => {
   it('ID とタイトルが重複せず、ID はカテゴリで始まる', () => {
     expect(new Set(IDEAS.map((x) => x.id)).size).toBe(IDEAS.length);
     expect(new Set(IDEAS.map((x) => x.title)).size).toBe(IDEAS.length);
-    // 暮らし・持ち物へ移したアイデアは元の ID のまま。それ以外は接頭辞＝カテゴリ
+    // 別カテゴリへ移したアイデアは元の ID のまま。それ以外は接頭辞＝カテゴリ
     const moved = new Set([
       'challenge-27', 'challenge-34', 'life-01', 'life-03', 'life-04', 'life-05', 'life-06',
       'life-07', 'life-08', 'life-18', 'life-19', 'life-20', 'life-21', 'life-22',
       'life-23', 'life-24', 'life-25', 'life-27', 'life-28', 'life-29', 'life-30',
+      'challenge-08', 'challenge-09', 'challenge-15', 'challenge-18', 'challenge-31', 'challenge-35',
     ]);
     for (const x of IDEAS) if (!moved.has(x.id)) expect(x.id.startsWith(`${x.cat}-`)).toBe(true);
     expect(IDEAS.some((x) => x.cat === 'other')).toBe(false);
