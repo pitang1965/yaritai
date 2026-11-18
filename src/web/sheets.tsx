@@ -2,7 +2,6 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { CATEGORIES } from '../domain/ideas';
 import { COST, isPublic, type Item, PRI, type Publish, SCOPES, type Settings, TARGETS, WHEN } from '../domain/item';
 import { authClient } from '../lib/auth-client';
-import { ideaById } from '../domain/ideas';
 
 function Sheet(props: { title: string; onClose: () => void; children: ReactNode }) {
   useEffect(() => {
@@ -64,7 +63,6 @@ export function EditSheet(props: {
   onDelete: () => void;
 }) {
   const [d, setD] = useState(props.item);
-  const examples = d.src ? ideaById.get(d.src)?.examples : undefined;
   return (
     <Sheet title="やりたいことを編集" onClose={props.onClose}>
       <div className="field">
@@ -77,26 +75,26 @@ export function EditSheet(props: {
           value={d.title}
           onChange={(e) => setD({ ...d, title: e.target.value })}
         />
-        {examples && <span className="lbl">例：{examples.join('、')}（自分の言葉に書き直せます）</span>}
+        {d.src && <span className="lbl">具体的に書き直してください</span>}
       </div>
       <div className="field">
-        <span className="lbl">カテゴリ</span>
+        <span className="lbl">カテゴリ（迷ったら「その他」）</span>
         <Seg options={CATEGORIES} value={d.cat} onChange={(k) => k && setD({ ...d, cat: k })} />
       </div>
       <div className="field">
-        <span className="lbl">本気度</span>
+        <span className="lbl">本気度（迷ったら「いつか」）</span>
         <Seg options={PRI} value={d.pri} onChange={(k) => k && setD({ ...d, pri: k })} />
       </div>
       <div className="field">
-        <span className="lbl">いつまでに</span>
+        <span className="lbl">いつまでに（決めていなければ「いつでも」）</span>
         <Seg options={WHEN} value={d.when} onChange={(k) => k && setD({ ...d, when: k })} />
       </div>
       <div className="field">
-        <span className="lbl">費用の目安</span>
+        <span className="lbl">費用の目安（任意・もう一度押すと外せます）</span>
         <Seg options={COST} value={d.cost} clearable onChange={(k) => setD({ ...d, cost: k })} />
       </div>
       <div className="field">
-        <label htmlFor="edMemo">メモ（理由・きっかけ・達成の記録など）</label>
+        <label htmlFor="edMemo">メモ（理由・具体的な計画・達成の記録など）</label>
         <textarea
           id="edMemo"
           rows={3}
