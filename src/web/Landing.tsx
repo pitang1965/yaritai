@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IDEAS } from '../domain/ideas';
 import { authClient } from '../lib/auth-client';
 
@@ -16,6 +16,7 @@ export function Landing() {
         <li>スマホでもパソコンでも、同じリストを使える</li>
         <li>リストを URL で公開して、家族や友だちに見せられる（見せたくない項目は隠せる）</li>
       </ul>
+      <LineNotice />
       <div>
         <button
           className="btn google"
@@ -41,6 +42,25 @@ export function Landing() {
       <p className="foot">
         <Link to="/privacy">プライバシーポリシー</Link>
       </p>
+    </div>
+  );
+}
+
+// LINE の中で開いたときだけ、既定のブラウザで開くよう案内する（LINE の中では Google ログインできない）
+export function LineNotice() {
+  // SSR では UA が分からないので、描画後に判定する（ハイドレーションのずれを避ける）
+  const [inLine, setInLine] = useState(false);
+  useEffect(() => setInLine(/ Line\//i.test(navigator.userAgent)), []);
+  if (!inLine) return null;
+  return (
+    <div className="notice">
+      <p>
+        LINE の中で開いています。いつものブラウザで開くと Google でログインでき、ホーム画面に追加してアプリのように使えます。
+      </p>
+      {/* LINE はこのクエリが付いた URL を既定のブラウザで開く */}
+      <a className="btn" href={`${location.pathname}?openExternalBrowser=1`}>
+        ブラウザで開く
+      </a>
     </div>
   );
 }

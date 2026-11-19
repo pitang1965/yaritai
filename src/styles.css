@@ -131,6 +131,9 @@ nav.tabs button[aria-selected="true"] { color: var(--accent); font-weight: 700 }
 .doc ul { padding-left: 1.2em }
 .doc a { color: var(--accent) }
 .doc .updated { font-size: 12px; margin: 0 }
+.notice { background: var(--accent-soft); border-radius: 12px; padding: 14px 16px; margin: 0 0 24px }
+.notice p { color: var(--ink); margin: 0 0 10px; font-size: 14px; text-align: left }
+.notice .btn { display: inline-flex; align-items: center; text-decoration: none; color: var(--on-accent) }
 .landing .foot { margin-top: 32px; font-size: 12px }
 .landing .foot a { color: var(--muted) }
 .row.draft { flex-wrap: wrap; background: var(--accent-soft) }

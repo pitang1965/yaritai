@@ -3,6 +3,7 @@ import { CATEGORIES } from '../domain/ideas';
 import { publicDescription, publicTitle } from '../domain/item';
 import { fetchPublicList } from '../server/functions';
 import { CatDot } from '../web/App';
+import { LineNotice } from '../web/Landing';
 
 // 公開リンク（/p/<文字列>）。ログイン不要で、持ち主のマイリストのうち公開範囲の項目を見せる。
 export const Route = createFileRoute('/p/$token')({
@@ -71,6 +72,7 @@ function PublicPage() {
           ))
         )}
       </div>
+      <LineNotice />
       <p style={{ textAlign: 'center' }}>
         <Link to="/" className="btn" style={{ display: 'inline-block', textDecoration: 'none', color: 'var(--on-accent)' }}>
           自分のリストを作る
